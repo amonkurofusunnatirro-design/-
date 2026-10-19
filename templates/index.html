@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>顔認証出席システム</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+  header { padding: 16px 24px; background: #1e293b; }
+  header h1 { margin: 0; font-size: 20px; }
+  header small { color: #94a3b8; }
+  main { display: flex; flex-wrap: wrap; gap: 24px; padding: 24px; }
+  .card { background: #1e293b; border-radius: 12px; padding: 16px; }
+  .video { flex: 2 1 480px; }
+  .video img { width: 100%; border-radius: 8px; background: #000; }
+  .list { flex: 1 1 320px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #334155; font-size: 14px; }
+  .出席 { color: #4ade80; } .遅刻 { color: #fbbf24; }
+  .warn { color: #f87171; }
+</style>
+</head>
+<body>
+<header>
+  <h1>顔認証出席システム</h1>
+  <small>カメラ: {{ camera_mode }} · 登録学生数 {{ student_count }} 名</small>
+</header>
+<main>
+  <section class="card video">
+    {% if not camera_ready %}<p class="warn">カメラを起動できませんでした。接続を確認して、サーバーを再起動してください。</p>{% endif %}
+    <img src="/video_feed" alt="カメラ">
+  </section>
+  <section class="card list">
+    <h2>本日の出席</h2>
+    <table>
+      <thead><tr><th>ID</th><th>氏名</th><th>時刻</th><th>状態</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="4">まだ誰もいません</td></tr></tbody>
+    </table>
+  </section>
+</main>
+<script>
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+async function refresh(){
+  try {
+    const r = await fetch('/api/today');
+    const data = await r.json();
+    const tb = document.getElementById('rows');
+    if (!data.length) { tb.innerHTML = '<tr><td colspan="4">まだ誰もいません</td></tr>'; return; }
+    tb.innerHTML = data.map(d =>
+      `<tr><td>${esc(d.id)}</td><td>${esc(d.name)}</td><td>${esc(d.time)}</td><td class="${esc(d.status)}">${esc(d.status)}</td></tr>`
+    ).join('');
+  } catch(e) {}
+}
+refresh(); setInterval(refresh, 3000);
+</script>
+</body>
+</html>

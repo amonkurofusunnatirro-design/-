@@ -1,0 +1,10 @@
+flask
+numpy
+opencv-python
+onnxruntime
+insightface
+pillow
+# Intel RealSenseカメラを使う場合のみ（任意）:
+# pyrealsense2
+# NVIDIA GPU がある場合（任意）: onnxruntime を削除して、代わりに以下をインストール
+# onnxruntime-gpu
